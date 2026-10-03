@@ -153,68 +153,14 @@
   </div>
 
   <div class="admin-panel-body">
-    <!-- Form -->
-    <section class="admin-section" aria-labelledby="form-section-title">
-      <h3 id="form-section-title" class="admin-section-title">
-        <span id="form-mode-icon">＋</span>
-        <span id="form-mode-text" id="form-section-title-text">Add a project</span>
-      </h3>
-      <form id="project-form" class="project-form" novalidate>
-        <div class="form-group">
-          <label for="form-name" class="form-label"><span id="lbl-name">Project name</span> <span class="required" aria-hidden="true">*</span></label>
-          <input type="text" id="form-name" class="form-input" placeholder="Ex: MineStats" required aria-required="true" autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label for="form-url" class="form-label"><span id="lbl-url">Project URL</span> <span class="required" aria-hidden="true">*</span></label>
-          <input type="url" id="form-url" class="form-input" placeholder="https://wardek74.github.io/myproject/" required aria-required="true" autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label for="form-desc" class="form-label"><span id="lbl-desc">Short description</span></label>
-          <input type="text" id="form-desc" class="form-input" placeholder="Ex: Minecraft statistics dashboard" maxlength="100" autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label for="form-icon" class="form-label"><span id="lbl-icon">Icon URL</span> <span class="form-hint form-hint-opt">(optional)</span></label>
-          <input type="url" id="form-icon" class="form-input" placeholder="https://example.com/icon.png" autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label for="form-accent" class="form-label"><span id="lbl-accent">Accent color</span> <span class="form-hint form-hint-opt">(optional)</span></label>
-          <div class="color-picker-row">
-            <input type="color" id="form-accent" class="form-color" value="#4db8ff" />
-            <div class="color-presets" role="group" aria-label="Color presets">
-              <button type="button" class="color-preset" data-color="#4db8ff" style="background:#4db8ff" title="Diamond"></button>
-              <button type="button" class="color-preset" data-color="#c47bff" style="background:#c47bff" title="Amethyst"></button>
-              <button type="button" class="color-preset" data-color="#4dffd4" style="background:#4dffd4" title="Prismarine"></button>
-              <button type="button" class="color-preset" data-color="#ffd966" style="background:#ffd966" title="Glowstone"></button>
-              <button type="button" class="color-preset" data-color="#ff6b6b" style="background:#ff6b6b" title="Redstone"></button>
-              <button type="button" class="color-preset" data-color="#69db7c" style="background:#69db7c" title="Emerald"></button>
-            </div>
-          </div>
-        </div>
-        <p id="form-error" class="form-error" role="alert" aria-live="polite" hidden></p>
-        <div class="form-actions">
-          <button type="button" id="form-cancel-btn" class="btn btn-ghost" hidden>Cancel</button>
-          <button type="submit" id="form-submit-btn" class="btn btn-primary"><span id="form-submit-label">＋ Add</span></button>
-        </div>
-      </form>
-    </section>
-
-    <!-- List -->
-    <section class="admin-section" aria-labelledby="list-section-title">
-      <h3 id="list-section-title" class="admin-section-title">
-        <span>☰</span>
-        <span id="list-section-title-text">Existing projects</span>
-        <span class="project-badge" id="admin-project-count">0</span>
-      </h3>
-      <div id="admin-project-list" class="admin-project-list" role="list"></div>
+    <section class="admin-section">
+      <p id="admin-instructions"></p>
+      <a id="admin-edit-link" class="btn btn-primary" href="https://github.com/Wardek74/wardek74.github.io/edit/main/projects.json" target="_blank" rel="noopener noreferrer"></a>
+      <p id="legacy-projects-note" hidden></p>
+      <button type="button" id="export-local-projects" class="btn btn-ghost" hidden></button>
     </section>
   </div>
 </aside>
-
-<!-- ======= TOAST ======= -->
-<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
-  <span id="toast-icon" class="toast-icon" aria-hidden="true"></span>
-  <span id="toast-message" class="toast-message"></span>
-</div>
 
 <script src="i18n.js"></script>
 <script src="script.js"></script>
