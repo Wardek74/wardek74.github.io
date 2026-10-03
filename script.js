@@ -1,21 +1,15 @@
 'use strict';
 
 /* ---- STATE ---- */
-const DEFAULT_PROJECTS = [
-  { name:'MineStats',        url:'https://wardek74.github.io/MineStats/', descKey:'d_minestats', icon:'', accent:'#4dffd4' },
-  { name:'Exemple Projet',   url:'https://wardek74.github.io/',           descKey:'d_example',   icon:'', accent:'#c47bff' },
-];
-const ADMIN_PASSWORD_HASH = 'dc28c229c8d9277291f9ee15d17d20221aa05813bcccf5469c522236a88748bf';
-const STORAGE_KEY    = 'wardek_projects_v1';
+const LEGACY_STORAGE_KEY = 'wardek_projects_v1';
 const LANG_KEY       = 'wardek_lang';
 const THEME_KEY      = 'wardek_theme';
 
 let projects      = [];
-let editingIndex  = null;
-let toastTimer    = null;
+let projectsLoaded = false;
+let projectsLoadError = false;
 let currentLang   = localStorage.getItem(LANG_KEY)  || 'en';
 let currentTheme  = localStorage.getItem(THEME_KEY) || 'dark';
-let adminUnlocked = false;
 
 /* Shorthand translation helper */
 const t = (key) => (LANGS[currentLang] || LANGS.en)[key] || key;
@@ -29,22 +23,10 @@ const adminBtn       = document.getElementById('admin-btn');
 const adminPanel     = document.getElementById('admin-panel');
 const adminOverlay   = document.getElementById('admin-overlay');
 const adminCloseBtn  = document.getElementById('admin-close-btn');
-const adminList      = document.getElementById('admin-project-list');
-const adminBadge     = document.getElementById('admin-project-count');
-const projectForm    = document.getElementById('project-form');
-const formName       = document.getElementById('form-name');
-const formUrl        = document.getElementById('form-url');
-const formDesc       = document.getElementById('form-desc');
-const formIcon       = document.getElementById('form-icon');
-const formAccent     = document.getElementById('form-accent');
-const formError      = document.getElementById('form-error');
-const formSubmitLbl  = document.getElementById('form-submit-label');
-const formCancelBtn  = document.getElementById('form-cancel-btn');
-const formModeText   = document.getElementById('form-mode-text');
-const formModeIcon   = document.getElementById('form-mode-icon');
-const toast          = document.getElementById('toast');
-const toastMsg       = document.getElementById('toast-message');
-const toastIcon      = document.getElementById('toast-icon');
+const adminInstructions = document.getElementById('admin-instructions');
+const adminEditLink  = document.getElementById('admin-edit-link');
+const legacyProjectsNote = document.getElementById('legacy-projects-note');
+const exportLocalProjectsBtn = document.getElementById('export-local-projects');
 const footerYear     = document.getElementById('footer-year');
 const footerCopyEl   = document.getElementById('footer-copy-text');
 const langBtn        = document.getElementById('lang-btn');
@@ -56,16 +38,16 @@ const badgeLabelEl   = document.getElementById('badge-label');
 const panelTitleEl   = document.getElementById('admin-panel-title-text');
 const emptyTitleEl   = document.getElementById('empty-title-text');
 const emptySubEl     = document.getElementById('empty-sub-text');
-const listSectionTitleEl = document.getElementById('list-section-title-text');
-const formSectionTitleEl = document.getElementById('form-section-title-text');
 
 /* ---- UTILS ---- */
-function loadProjects() {
-  try { const r = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (Array.isArray(r) && r.length) return r; } catch(e){}
-  return null;
-}
-function saveProjects() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); } catch(e){}
+async function loadProjects() {
+  const response = await fetch('./projects.json', { cache: 'no-store' });
+  if (!response.ok) throw new Error(`Unable to load projects: ${response.status}`);
+  const data = await response.json();
+  if (!Array.isArray(data) || data.some(project => !project || typeof project.name !== 'string' || typeof project.url !== 'string')) {
+    throw new Error('Project data must be an array of projects with names and URLs');
+  }
+  return data;
 }
 function esc(s) { const d=document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; }
 /* Detect if a string is (or contains) an emoji */
@@ -77,23 +59,6 @@ function isEmoji(s) {
     return /[\uD800-\uDBFF][\uDC00-\uDFFF]/.test(s) || /[\u2600-\u26FF]/.test(s);
   }
 }
-async function hashPassword(value) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(value);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-function showToast(msg, type='success') {
-  clearTimeout(toastTimer);
-  toastMsg.textContent = msg;
-  toastIcon.textContent = type === 'success' ? '✓' : '✕';
-  toast.className = `toast toast-${type}`;
-  toast.hidden = false;
-  void toast.offsetWidth;
-  toast.classList.add('is-visible');
-  toastTimer = setTimeout(() => { toast.classList.remove('is-visible'); setTimeout(()=>{ toast.hidden=true; },300); }, 3000);
-}
-
 /* ---- THEME ---- */
 function applyTheme(theme) {
   currentTheme = theme;
@@ -109,6 +74,7 @@ function applyLang(lang) {
   localStorage.setItem(LANG_KEY, lang);
   document.documentElement.lang = lang;
   const L = LANGS[lang] || LANGS.en;
+  const A = ADMIN_COPY[lang] || ADMIN_COPY.en;
 
   /* Update static elements */
   heroTitleEl.innerHTML    = L.heroTitle;
@@ -119,7 +85,10 @@ function applyLang(lang) {
   if (panelTitleEl) panelTitleEl.textContent = L.panelTitle;
   if (emptyTitleEl) emptyTitleEl.textContent = L.emptyTitle;
   if (emptySubEl)   emptySubEl.textContent   = L.emptySub;
-  if (listSectionTitleEl) listSectionTitleEl.textContent = L.listTitle;
+  if (adminInstructions) adminInstructions.textContent = A.adminInstructions;
+  if (adminEditLink) adminEditLink.textContent = A.adminEditProjects;
+  if (legacyProjectsNote) legacyProjectsNote.textContent = A.adminLegacyInstructions;
+  if (exportLocalProjectsBtn) exportLocalProjectsBtn.textContent = A.adminExportLocal;
 
   /* Update lang button label */
   const btnFlag  = langBtn.querySelector('.lang-flag');
@@ -132,33 +101,8 @@ function applyLang(lang) {
     opt.classList.toggle('is-active', opt.dataset.lang === lang);
   });
 
-  /* Re-render grid and admin panel with new translations */
+  /* Re-render the grid with the selected language */
   renderGrid(searchInput.value);
-  if (!adminPanel.hidden) renderAdminList();
-  updateFormLabels();
-}
-
-function updateFormLabels() {
-  const L = LANGS[currentLang] || LANGS.en;
-  if (formModeText) {
-    formModeText.textContent  = editingIndex !== null ? L.editTitle  : L.addTitle;
-    formModeIcon.textContent  = editingIndex !== null ? '✎' : '＋';
-    formSubmitLbl.textContent = editingIndex !== null ? L.btnSave    : L.btnAdd;
-  }
-  formName.placeholder = L.phName;
-  formUrl.placeholder  = L.phUrl;
-  formDesc.placeholder = L.phDesc;
-  formIcon.placeholder = L.phIcon;
-  formCancelBtn.textContent = L.btnCancel;
-
-  /* Labels */
-  const lbl = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  lbl('lbl-name',   L.fName);
-  lbl('lbl-url',    L.fUrl);
-  lbl('lbl-desc',   L.fDesc);
-  lbl('lbl-icon',   L.fIcon);
-  lbl('lbl-accent', L.fAccent);
-  document.querySelectorAll('.form-hint-opt').forEach(el => el.textContent = L.fOpt);
 }
 
 /* ---- CARD RENDERING ---- */
@@ -217,6 +161,20 @@ function renderGrid(filter='') {
   const filtered = term ? projects.filter(p => (p.name||'').toLowerCase().includes(term) || getDesc(p).toLowerCase().includes(term)) : projects;
   const L        = LANGS[currentLang] || LANGS.en;
   grid.innerHTML = '';
+  if (!projectsLoaded) {
+    emptyState.hidden = true;
+    projectCount.textContent = L.loading;
+    return;
+  }
+  if (projectsLoadError) {
+    emptyState.hidden = false;
+    emptyTitleEl.textContent = (ADMIN_COPY[currentLang] || ADMIN_COPY.en).loadError;
+    emptySubEl.textContent = '';
+    projectCount.textContent = (ADMIN_COPY[currentLang] || ADMIN_COPY.en).loadError;
+    return;
+  }
+  emptyTitleEl.textContent = L.emptyTitle;
+  emptySubEl.textContent = L.emptySub;
   if (filtered.length === 0) {
     emptyState.hidden = false;
     projectCount.textContent = term ? L.noSearchCount(filter) : L.noProjects;
@@ -231,45 +189,6 @@ function renderGrid(filter='') {
   }
 }
 
-/* ---- ADMIN LIST ---- */
-function renderAdminList() {
-  adminList.innerHTML = '';
-  adminBadge.textContent = projects.length;
-  if (projects.length === 0) {
-    adminList.innerHTML = `<p style="font-size:.82rem;color:var(--text-muted);text-align:center;padding:1rem 0">—</p>`;
-    return;
-  }
-  projects.forEach((p,i) => {
-    const accent = p.accent||'#4db8ff';
-    const li = document.createElement('div');
-    li.className = 'admin-project-item';
-    li.setAttribute('role','listitem');
-    let iconHTML;
-    if (p.icon) {
-      if (isEmoji(p.icon)) {
-        iconHTML = `<div class="admin-item-icon-emoji">${esc(p.icon)}</div>`;
-      } else {
-        iconHTML = `<img src="${esc(p.icon)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover"/>`;
-      }
-    } else {
-      iconHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${accent}" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`;
-    }
-    li.innerHTML = `
-      <div class="admin-item-icon">${iconHTML}</div>
-      <div class="admin-item-info">
-        <div class="admin-item-name">${esc(p.name)}</div>
-        <div class="admin-item-url">${esc(p.url)}</div>
-      </div>
-      <div class="admin-item-actions">
-        <button class="btn btn-reorder" data-action="move-up" data-index="${i}" aria-label="${t('moveUp')}" title="${t('moveUp')}" ${i === 0 ? 'disabled' : ''}>↑</button>
-        <button class="btn btn-reorder" data-action="move-down" data-index="${i}" aria-label="${t('moveDown')}" title="${t('moveDown')}" ${i === projects.length - 1 ? 'disabled' : ''}>↓</button>
-        <button class="btn btn-edit" data-action="edit" data-index="${i}" aria-label="Edit ${esc(p.name)}">${t('btnEdit')}</button>
-        <button class="btn btn-danger" data-action="delete" data-index="${i}" aria-label="Delete ${esc(p.name)}">✕</button>
-      </div>`;
-    adminList.appendChild(li);
-  });
-}
-
 /* ---- ADMIN PANEL ---- */
 function openAdminPanel() {
   adminPanel.hidden = false;
@@ -277,52 +196,11 @@ function openAdminPanel() {
   adminOverlay.classList.add('is-visible');
   adminOverlay.setAttribute('aria-hidden','false');
   requestAnimationFrame(() => adminPanel.classList.add('is-open'));
-  renderAdminList();
-  updateFormLabels();
-  setTimeout(() => formName.focus(), 350);
 }
 function closeAdminPanel() {
   adminPanel.classList.remove('is-open');
   adminOverlay.classList.remove('is-visible');
   setTimeout(() => { adminPanel.hidden=true; adminPanel.setAttribute('aria-hidden','true'); adminOverlay.setAttribute('aria-hidden','true'); }, 360);
-  resetForm();
-}
-function resetForm() {
-  editingIndex = null;
-  projectForm.reset();
-  formAccent.value = '#4db8ff';
-  formError.hidden = true;
-  formCancelBtn.hidden = true;
-  formName.classList.remove('is-invalid');
-  formUrl.classList.remove('is-invalid');
-  updateFormLabels();
-}
-function fillForm(i) {
-  const p = projects[i]; if(!p) return;
-  editingIndex    = i;
-  formName.value  = p.name   || '';
-  formUrl.value   = p.url    || '';
-  formDesc.value  = p.desc   || (p.descKey ? t(p.descKey) : '');
-  formIcon.value  = p.icon   || '';
-  formAccent.value= p.accent || '#4db8ff';
-  formError.hidden     = true;
-  formCancelBtn.hidden = false;
-  updateFormLabels();
-  projectForm.scrollIntoView({behavior:'smooth', block:'start'});
-  formName.focus();
-}
-
-/* ---- FORM VALIDATION ---- */
-function validateForm() {
-  let ok = true;
-  formName.classList.remove('is-invalid');
-  formUrl.classList.remove('is-invalid');
-  if (!formName.value.trim())  { formName.classList.add('is-invalid'); ok=false; }
-  const urlVal = formUrl.value.trim();
-  if (!urlVal) { formUrl.classList.add('is-invalid'); ok=false; }
-  else { try { new URL(urlVal); } catch(_){ formUrl.classList.add('is-invalid'); ok=false; } }
-  if (!ok) { formError.textContent = t('fErr'); formError.hidden = false; }
-  return ok;
 }
 
 /* ---- LANG DROPDOWN ---- */
@@ -385,75 +263,30 @@ document.addEventListener('click', (e) => {
 });
 
 /* Admin */
-adminBtn.addEventListener('click', () => {
-  if (adminUnlocked) { openAdminPanel(); return; }
-  const pwd = prompt(t('adminPwd'));
-  if (pwd === null) return;
-  hashPassword(pwd).then(hash => {
-    if (hash === ADMIN_PASSWORD_HASH) {
-      adminUnlocked = true;
-      openAdminPanel();
-      showToast(t('accessOK'));
-    } else {
-      showToast(t('wrongPwd'), 'error');
-    }
-  }).catch(() => showToast(t('wrongPwd'), 'error'));
-});
+adminBtn.addEventListener('click', openAdminPanel);
 adminCloseBtn.addEventListener('click', closeAdminPanel);
 adminOverlay.addEventListener('click', closeAdminPanel);
 document.addEventListener('keydown', e => { if (e.key==='Escape' && !adminPanel.hidden) closeAdminPanel(); });
 
-/* Form submit */
-projectForm.addEventListener('submit', e => {
-  e.preventDefault();
-  formError.hidden = true;
-  if (!validateForm()) return;
-  const newProject = { name:formName.value.trim(), url:formUrl.value.trim(), desc:formDesc.value.trim(), icon:formIcon.value.trim(), accent:formAccent.value };
-  if (editingIndex !== null) {
-    // Preserve descKey if not edited manually
-    if (!newProject.desc && projects[editingIndex].descKey) newProject.descKey = projects[editingIndex].descKey;
-    projects[editingIndex] = newProject;
-    showToast(t('tUpdated')(newProject.name));
-  } else {
-    projects.push(newProject);
-    showToast(t('tAdded')(newProject.name));
+function getLegacyProjects() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    return Array.isArray(stored) && stored.length ? stored : null;
+  } catch (error) {
+    console.error('Unable to read projects saved in this browser:', error);
+    return null;
   }
-  saveProjects(); renderGrid(searchInput.value); renderAdminList(); resetForm();
-});
-
-formCancelBtn.addEventListener('click', resetForm);
-
-/* Admin list delegation */
-adminList.addEventListener('click', e => {
-  const btn = e.target.closest('[data-action]'); if (!btn) return;
-  const idx = parseInt(btn.dataset.index, 10);
-  if (btn.dataset.action === 'move-up' || btn.dataset.action === 'move-down') {
-    const direction = btn.dataset.action === 'move-up' ? -1 : 1;
-    const targetIndex = idx + direction;
-    if (targetIndex < 0 || targetIndex >= projects.length) return;
-    [projects[idx], projects[targetIndex]] = [projects[targetIndex], projects[idx]];
-    if (editingIndex === idx) editingIndex = targetIndex;
-    else if (editingIndex === targetIndex) editingIndex = idx;
-    saveProjects();
-    renderGrid(searchInput.value);
-    renderAdminList();
-    showToast(t('tReordered'));
-  }
-  else if (btn.dataset.action === 'edit') { fillForm(idx); }
-  else if (btn.dataset.action === 'delete') {
-    const name = projects[idx]?.name || '?';
-    if (confirm(t('delConfirm')(name))) {
-      projects.splice(idx,1); saveProjects();
-      renderGrid(searchInput.value); renderAdminList();
-      showToast(t('tDeleted')(name));
-      if (editingIndex === idx) resetForm();
-    }
-  }
-});
-
-/* Color presets */
-document.querySelectorAll('.color-preset').forEach(btn => {
-  btn.addEventListener('click', () => { formAccent.value = btn.dataset.color; });
+}
+exportLocalProjectsBtn.addEventListener('click', () => {
+  const legacyProjects = getLegacyProjects();
+  if (!legacyProjects) return;
+  const blob = new Blob([JSON.stringify(legacyProjects, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const download = document.createElement('a');
+  download.href = url;
+  download.download = 'projects.json';
+  download.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
 /* Search */
@@ -462,9 +295,20 @@ searchInput.addEventListener('input', () => renderGrid(searchInput.value));
 /* ---- INIT ---- */
 (function init() {
   if (footerYear) footerYear.textContent = new Date().getFullYear();
-  const stored = loadProjects();
-  projects = stored || [...DEFAULT_PROJECTS];
+  const legacyProjects = getLegacyProjects();
+  exportLocalProjectsBtn.hidden = !legacyProjects;
+  legacyProjectsNote.hidden = !legacyProjects;
   buildLangDropdown();
   applyTheme(currentTheme);
   applyLang(currentLang);
+  loadProjects().then(loadedProjects => {
+    projects = loadedProjects;
+    projectsLoaded = true;
+    renderGrid(searchInput.value);
+  }).catch(error => {
+    console.error('Unable to load the shared project list:', error);
+    projectsLoadError = true;
+    projectsLoaded = true;
+    renderGrid(searchInput.value);
+  });
 })();

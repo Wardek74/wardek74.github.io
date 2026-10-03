@@ -11,3 +11,76 @@ const LANGS = {
   ja:{ flag:'🇯🇵', name:'日本語', heroTitle:'私の<span class="accent-diamond">プロジェクト</span>', heroDesc:'ダッシュボード、ツール、ウェブ体験のコレクション。<br/>カードをクリックして探索してください。', searchPH:'プロジェクトを検索...', loading:'プロジェクトを読み込み中…', noProjects:'プロジェクトがありません — Admin から追加してください。', emptyTitle:'プロジェクトが見つかりません', emptySub:'別のキーワードを試すか、Admin からプロジェクトを追加してください。', footerPre:'全著作権所有。', adminPwd:'🔐 管理者パスワード：', accessOK:'管理者アクセスが許可されました。', wrongPwd:'パスワードが間違っています。', panelTitle:'管理', addTitle:'プロジェクトを追加', editTitle:'プロジェクトを編集', fName:'プロジェクト名', fUrl:'プロジェクト URL', fDesc:'簡単な説明', fIcon:'アイコン URL', fAccent:'アクセントカラー', fOpt:'（任意）', phName:'例：MineStats', phUrl:'https://wardek74.github.io/myproject/', phDesc:'例：Minecraft 統計ダッシュボード', phIcon:'https://example.com/icon.png', btnAdd:'＋ 追加', btnSave:'✔ 保存', btnCancel:'キャンセル', listTitle:'既存のプロジェクト', moveUp:'上へ移動', moveDown:'下へ移動', tReordered:'プロジェクトの順序を更新しました。', btnEdit:'✎ 編集', delConfirm:(n)=>`"${n}"を削除しますか？この操作は元に戻せません。`, tAdded:(n)=>`"${n}"を追加しました。`, tUpdated:(n)=>`"${n}"を更新しました。`, tDeleted:(n)=>`"${n}"を削除しました。`, fErr:'必須フィールド（*）を正しく入力してください。', online:'オンライン', d_minestats:'Minecraft 統計ダッシュボード — リアルタイムでデータを追跡。', d_example:'2番目のデモプロジェクト。' },
   ko:{ flag:'🇰🇷', name:'한국어', heroTitle:'내 <span class="accent-diamond">프로젝트</span>', heroDesc:'대시보드, 도구 및 웹 경험 모음입니다.<br/>카드를 클릭하여 탐색하세요.', searchPH:'프로젝트 검색...', loading:'프로젝트 로딩 중…', noProjects:'프로젝트 없음 — Admin에서 추가하세요.', emptyTitle:'프로젝트를 찾을 수 없습니다', emptySub:'다른 검색어를 시도하거나 Admin에서 프로젝트를 추가하세요.', footerPre:'모든 권리 보유.', adminPwd:'🔐 관리자 비밀번호:', accessOK:'관리자 접근 허용됨.', wrongPwd:'비밀번호가 틀렸습니다.', panelTitle:'관리', addTitle:'프로젝트 추가', editTitle:'프로젝트 편집', fName:'프로젝트 이름', fUrl:'프로젝트 URL', fDesc:'짧은 설명', fIcon:'아이콘 URL', fAccent:'강조 색상', fOpt:'(선택 사항)', phName:'예: MineStats', phUrl:'https://wardek74.github.io/myproject/', phDesc:'예: Minecraft 통계 대시보드', phIcon:'https://example.com/icon.png', btnAdd:'＋ 추가', btnSave:'✔ 저장', btnCancel:'취소', listTitle:'기존 프로젝트', moveUp:'위로 이동', moveDown:'아래로 이동', tReordered:'프로젝트 순서가 업데이트되었습니다.', btnEdit:'✎ 편집', delConfirm:(n)=>`"${n}"을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.`, tAdded:(n)=>`"${n}" 추가됨.`, tUpdated:(n)=>`"${n}" 업데이트됨.`, tDeleted:(n)=>`"${n}" 삭제됨.`, fErr:'필수 입력란(*)을 올바르게 채워주세요.', online:'온라인', d_minestats:'Minecraft 통계 대시보드 — 실시간으로 플레이어 통계를 추적하세요.', d_example:'두 번째 데모 프로젝트.' },
 };
+
+const ADMIN_COPY = {
+  en: {
+    adminInstructions: 'Edit and commit projects.json on GitHub. The order in the file is the order shown on the site. Changes appear for everyone after the site deploys.',
+    adminEditProjects: 'Edit the shared project list on GitHub',
+    adminLegacyInstructions: 'This browser also has an older project list saved locally. Download it, then replace the contents of projects.json with the downloaded file to recover those projects.',
+    adminExportLocal: 'Download projects saved only in this browser',
+    loadError: 'Projects could not be loaded. Please try again later.',
+  },
+  fr: {
+    adminInstructions: 'Modifie projects.json sur GitHub, puis valide (Commit changes). L’ordre dans le fichier est celui affiché sur le site. Les changements seront visibles par tous après le déploiement.',
+    adminEditProjects: 'Modifier la liste partagée sur GitHub',
+    adminLegacyInstructions: 'Tu as aussi une ancienne liste sauvegardée dans ce navigateur. Télécharge-la, puis remplace le contenu de projects.json par son contenu avant de valider pour récupérer ces projets.',
+    adminExportLocal: 'Télécharger les projets enregistrés dans ce navigateur',
+    loadError: 'Impossible de charger les projets. Réessaie plus tard.',
+  },
+  es: {
+    adminInstructions: 'Edita projects.json en GitHub y confirma los cambios. El orden del archivo es el orden del sitio. Los cambios serán visibles para todos después del despliegue.',
+    adminEditProjects: 'Editar la lista compartida en GitHub',
+    adminLegacyInstructions: 'También tienes una lista antigua guardada en este navegador. Descárgala y reemplaza el contenido de projects.json por el archivo descargado para recuperar esos proyectos.',
+    adminExportLocal: 'Descargar los proyectos guardados en este navegador',
+    loadError: 'No se pudieron cargar los proyectos. Inténtalo más tarde.',
+  },
+  de: {
+    adminInstructions: 'Bearbeite projects.json auf GitHub und bestätige die Änderungen. Die Reihenfolge in der Datei ist die Reihenfolge auf der Website. Nach der Bereitstellung sind die Änderungen für alle sichtbar.',
+    adminEditProjects: 'Gemeinsame Projektliste auf GitHub bearbeiten',
+    adminLegacyInstructions: 'In diesem Browser ist noch eine alte Projektliste gespeichert. Lade sie herunter und ersetze den Inhalt von projects.json durch die heruntergeladene Datei, um diese Projekte zu übernehmen.',
+    adminExportLocal: 'Projekte herunterladen, die nur in diesem Browser gespeichert sind',
+    loadError: 'Projekte konnten nicht geladen werden. Bitte später erneut versuchen.',
+  },
+  it: {
+    adminInstructions: 'Modifica projects.json su GitHub e conferma le modifiche. L’ordine nel file è quello mostrato sul sito. Le modifiche saranno visibili a tutti dopo la pubblicazione.',
+    adminEditProjects: 'Modifica l’elenco condiviso su GitHub',
+    adminLegacyInstructions: 'In questo browser è ancora salvato un vecchio elenco di progetti. Scaricalo e sostituisci il contenuto di projects.json con il file scaricato per recuperarli.',
+    adminExportLocal: 'Scarica i progetti salvati solo in questo browser',
+    loadError: 'Impossibile caricare i progetti. Riprova più tardi.',
+  },
+  pt: {
+    adminInstructions: 'Edite projects.json no GitHub e confirme as alterações. A ordem no ficheiro é a ordem apresentada no site. As alterações ficam visíveis para todos após a publicação.',
+    adminEditProjects: 'Editar a lista partilhada no GitHub',
+    adminLegacyInstructions: 'Este navegador ainda tem uma lista antiga de projetos guardada. Transfira-a e substitua o conteúdo de projects.json pelo ficheiro transferido para recuperar esses projetos.',
+    adminExportLocal: 'Transferir projetos guardados apenas neste navegador',
+    loadError: 'Não foi possível carregar os projetos. Tente novamente mais tarde.',
+  },
+  ru: {
+    adminInstructions: 'Измените projects.json на GitHub и подтвердите изменения. Порядок в файле определяет порядок на сайте. После публикации изменения будут видны всем.',
+    adminEditProjects: 'Изменить общий список проектов на GitHub',
+    adminLegacyInstructions: 'В этом браузере сохранился старый список проектов. Скачайте его и замените содержимое projects.json скачанным файлом, чтобы вернуть эти проекты.',
+    adminExportLocal: 'Скачать проекты, сохранённые только в этом браузере',
+    loadError: 'Не удалось загрузить проекты. Попробуйте позже.',
+  },
+  zh: {
+    adminInstructions: '在 GitHub 上编辑 projects.json 并提交更改。文件中的顺序就是网站上的显示顺序。网站部署后，所有人都能看到更改。',
+    adminEditProjects: '在 GitHub 上编辑共享项目列表',
+    adminLegacyInstructions: '此浏览器中还保存着旧项目列表。下载该列表，然后用下载文件的内容替换 projects.json，即可恢复这些项目。',
+    adminExportLocal: '下载仅保存在此浏览器中的项目',
+    loadError: '无法加载项目，请稍后重试。',
+  },
+  ja: {
+    adminInstructions: 'GitHubでprojects.jsonを編集して変更を確定してください。ファイル内の順序がサイトの表示順になります。デプロイ後、全員に変更が反映されます。',
+    adminEditProjects: 'GitHubで共有プロジェクト一覧を編集',
+    adminLegacyInstructions: 'このブラウザーには古いプロジェクト一覧も保存されています。ダウンロードし、projects.jsonの内容をダウンロードしたファイルで置き換えると復元できます。',
+    adminExportLocal: 'このブラウザーにのみ保存されたプロジェクトをダウンロード',
+    loadError: 'プロジェクトを読み込めませんでした。後でもう一度お試しください。',
+  },
+  ko: {
+    adminInstructions: 'GitHub에서 projects.json을 수정하고 변경 사항을 커밋하세요. 파일의 순서가 사이트 표시 순서입니다. 배포 후 모든 사용자에게 변경 사항이 표시됩니다.',
+    adminEditProjects: 'GitHub에서 공유 프로젝트 목록 편집',
+    adminLegacyInstructions: '이 브라우저에 이전 프로젝트 목록도 저장되어 있습니다. 다운로드한 다음 projects.json 내용을 다운로드 파일의 내용으로 바꾸면 프로젝트를 복구할 수 있습니다.',
+    adminExportLocal: '이 브라우저에만 저장된 프로젝트 다운로드',
+    loadError: '프로젝트를 불러올 수 없습니다. 나중에 다시 시도하세요.',
+  },
+};

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "MineStats",
+    "url": "https://wardek74.github.io/MineStats/",
+    "descKey": "d_minestats",
+    "icon": "",
+    "accent": "#4dffd4"
+  },
+  {
+    "name": "Exemple Projet",
+    "url": "https://wardek74.github.io/",
+    "descKey": "d_example",
+    "icon": "",
+    "accent": "#c47bff"
+  }
+]
