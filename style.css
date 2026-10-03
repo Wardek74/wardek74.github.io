@@ -697,6 +697,23 @@ body {
 .btn-edit:hover {
   background: rgba(77,184,255,0.2);
 }
+.btn-reorder {
+  min-width: 2rem;
+  padding: 0.35rem 0.45rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  justify-content: center;
+}
+.btn-reorder:hover:not(:disabled) {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+}
+.btn-reorder:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
 
 /* ---------- LISTE ADMIN PROJETS ---------- */
 .admin-project-list { display: flex; flex-direction: column; gap: 0.5rem; }

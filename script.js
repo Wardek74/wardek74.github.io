@@ -261,6 +261,8 @@ function renderAdminList() {
         <div class="admin-item-url">${esc(p.url)}</div>
       </div>
       <div class="admin-item-actions">
+        <button class="btn btn-reorder" data-action="move-up" data-index="${i}" aria-label="${t('moveUp')}" title="${t('moveUp')}" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn btn-reorder" data-action="move-down" data-index="${i}" aria-label="${t('moveDown')}" title="${t('moveDown')}" ${i === projects.length - 1 ? 'disabled' : ''}>↓</button>
         <button class="btn btn-edit" data-action="edit" data-index="${i}" aria-label="Edit ${esc(p.name)}">${t('btnEdit')}</button>
         <button class="btn btn-danger" data-action="delete" data-index="${i}" aria-label="Delete ${esc(p.name)}">✕</button>
       </div>`;
@@ -425,7 +427,19 @@ formCancelBtn.addEventListener('click', resetForm);
 adminList.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]'); if (!btn) return;
   const idx = parseInt(btn.dataset.index, 10);
-  if (btn.dataset.action === 'edit') { fillForm(idx); }
+  if (btn.dataset.action === 'move-up' || btn.dataset.action === 'move-down') {
+    const direction = btn.dataset.action === 'move-up' ? -1 : 1;
+    const targetIndex = idx + direction;
+    if (targetIndex < 0 || targetIndex >= projects.length) return;
+    [projects[idx], projects[targetIndex]] = [projects[targetIndex], projects[idx]];
+    if (editingIndex === idx) editingIndex = targetIndex;
+    else if (editingIndex === targetIndex) editingIndex = idx;
+    saveProjects();
+    renderGrid(searchInput.value);
+    renderAdminList();
+    showToast(t('tReordered'));
+  }
+  else if (btn.dataset.action === 'edit') { fillForm(idx); }
   else if (btn.dataset.action === 'delete') {
     const name = projects[idx]?.name || '?';
     if (confirm(t('delConfirm')(name))) {
